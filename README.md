@@ -84,3 +84,16 @@ El sitio quedó funcionando en todas sus variantes:
 - Documentación del proceso y comunicación con cliente  
 
 ---
+
+## Diagramas
+![Flujo DNS](img/flujo-de-dns.png)
+*Figura 1 — Flujo de DNS*
+
+![Antes vs Después](img/antes-vs-despues-dns-y-ssl-diagrama-de-arquitectura.png)
+*Figura 2 — Antes vs Despues dns y ssl diagrama de arquitectura*
+
+![Flujo problema→solución](img/diagrama-de-flujo-problema-diagnostico-solucion.png)
+*Figura 3 — Proceso de problema, diagnóstico y solución*
+
+![Reglas 301](img/diagrama-de-reglas-de-redireccion-301.png)
+*Figura 4 — Redirecciones 301 configuradas en Cloudflare*
