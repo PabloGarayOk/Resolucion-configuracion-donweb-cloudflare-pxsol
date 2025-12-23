@@ -86,6 +86,10 @@ El sitio quedó funcionando en todas sus variantes:
 ---
 
 ## Diagramas
+
+Este repo incluye diagramas de flujo y arquitectura DNS que ilustran el antes y después
+de la resolución.
+
 ![Flujo DNS](img/flujo-de-dns.png)
 *Figura 1 — Flujo de DNS*
 
