@@ -1,103 +1,110 @@
-# Resolución de configuración DNS + SSL entre DonWeb, Cloudflare y PXsol
+# DNS + SSL Configuration Resolution (DonWeb, Cloudflare & PXsol)
 
-Este repositorio documenta el proceso completo de diagnóstico, resolución y estabilización de un sitio web que presentaba errores de certificado SSL, correos mal configurados, problemas de redirección y configuraciones conflictivas entre tres proveedores:
+This repository documents the complete process of **diagnosing, resolving, and stabilizing** a production website affected by SSL certificate errors, email delivery issues, redirection problems, and conflicting configurations across multiple providers.
 
-- **DonWeb (Ferozo)** – servidor de hosting y DNS original
-- **Cloudflare** – CDN, SSL y proxy
-- **PXsol** – sistema SaaS externo al que apunta el dominio (secure.pxsol.com)
+The infrastructure involved three different services:
 
----
-
-## Problema inicial
-
-El dominio 'abedulmardelaspampas.com.ar' presentaba:
-
-- Correos rebotando hacia Gmail.
-- Advertencia de navegador: `NET::ERR_CERT_COMMON_NAME_INVALID`
-- Certificado inválido (*.ferozo.com) cuando se accedía sin www
-- Redirecciones inconsistentes http/https
-- Registros DNS duplicados y conflictivos
-- SSL válido solo para el subdominio www, no para el dominio raíz
+- **DonWeb (Ferozo)** – Hosting provider and original DNS server  
+- **Cloudflare** – CDN, SSL termination and proxy  
+- **PXsol** – External SaaS platform (domain target: `secure.pxsol.com`)  
 
 ---
 
-## Diagnóstico
-1. Ferozo tenia mal configurados los registros SPF/DKIM/DMARC.
-2. Cloudflare estaba activo parcialmente y entregando certificados para `www`.
-3. El dominio raíz estaba apuntando directamente al servidor de Ferozo sin proxy (Solo DNS).
-4. El SaaS PXsol requería que solo `www` estuviera proxificado (CNAME → secure.pxsol.com).
-5. El dominio raíz no podía tener un SSL válido del lado del servidor remoto.
-6. Se necesitaba una redirección 301 desde el dominio raíz hacia `www`.
+## Initial Problem
+
+The domain `abedulmardelaspampas.com.ar` was experiencing the following issues:
+
+- Emails bouncing when sent to Gmail accounts
+- Browser warning: `NET::ERR_CERT_COMMON_NAME_INVALID`
+- Invalid certificate (`*.ferozo.com`) when accessing the site without `www`
+- Inconsistent HTTP / HTTPS redirections
+- Duplicate and conflicting DNS records
+- SSL certificate valid only for the `www` subdomain, not for the root domain
 
 ---
 
-## Solución implementada
+## Diagnosis
 
-### Ajustes en Ferozo
-- Creación de registro SPF
-- Creación de registro DKIM
-- Creación de registro DMARC
-
-### Ajustes en Cloudflare
-- Configuración de registros SPF, DKIM, DMARC
-- Registro **A (@)** configurado en **Redirigido mediante proxy**
-- Registro **CNAME (www)** configurado en **Redirigido mediante proxy** apuntando a 'secure.pxsol.com'
-- SSL en modo **Full**
-- Activación de reglas de redirección:
-
-**Regla 1 — https -> www**
-https://abedulmardelaspampas.com.ar/* -> https://www.abedulmardelaspampas.com.ar/$1 (301)
-
-**Regla 2 — http -> https + www**
-http://abedulmardelaspampas.com.ar/* -> https://www.abedulmardelaspampas.com.ar/$1 (301)
-
-
-### Validación
-- Accesos correctos con y sin www
-- Redirección automática a versión segura
-- Sitio servido correctamente desde PXsol detrás del proxy de Cloudflare
-- Correos electrónicos OK (SPF, DKIM, DMARC verificados)
-- Propagación DNS completa
+1. SPF, DKIM and DMARC records were incorrectly configured in Ferozo.
+2. Cloudflare was partially enabled and only issuing certificates for `www`.
+3. The root domain (`@`) was pointing directly to the Ferozo server without proxying (DNS Only).
+4. PXsol SaaS required **only the `www` subdomain** to be proxied (CNAME → `secure.pxsol.com`).
+5. The root domain could not obtain a valid SSL certificate from the remote server.
+6. A **301 redirect** from the root domain to `www` was required.
 
 ---
 
-## Resultado
+## Implemented Solution
 
-El sitio quedó funcionando en todas sus variantes:
-- mails salientes y entrantes ok! para cualquier cliente de correo 
-- http -> redirige a https  
-- dominio sin www -> redirige a www  
-- certificado HTTPS válido del lado de Cloudflare  
-- navegación sin advertencias de seguridad  
-- plataforma hotelera PXsol funcionando detrás del proxy sin problemas  
+### Ferozo Configuration
+- Created SPF record
+- Created DKIM record
+- Created DMARC record
 
----
+### Cloudflare Configuration
+- Configured SPF, DKIM and DMARC records
+- **A record (@)** set to **Proxied**
+- **CNAME record (www)** set to **Proxied**, pointing to `secure.pxsol.com`
+- SSL mode set to **Full**
+- Redirect rules enabled:
 
-## Habilidades aplicadas
+**Rule 1 — HTTPS → WWW**  
+`https://abedulmardelaspampas.com.ar/* → https://www.abedulmardelaspampas.com.ar/$1` (301)
 
-- Ferozo (SPF/DKIM/DMARC)
-- Administración DNS avanzada  
-- Cloudflare (SSL, Proxy, Rules, Redirects)  
-- Depuración de errores SSL  
-- Análisis de infraestructura multi-proveedor  
-- Coordinación técnica con soporte de hosting  
-- Documentación del proceso y comunicación con cliente  
+**Rule 2 — HTTP → HTTPS + WWW**  
+`http://abedulmardelaspampas.com.ar/* → https://www.abedulmardelaspampas.com.ar/$1` (301)
 
 ---
 
-## Diagramas
+## Validation
 
-Este repo incluye diagramas de flujo y arquitectura DNS que ilustran el antes y después
-de la resolución.
+- Correct access with and without `www`
+- Automatic redirection to the secure version
+- Website served correctly from PXsol behind Cloudflare proxy
+- Email delivery fully functional (SPF, DKIM, DMARC verified)
+- DNS propagation completed successfully
 
-![Flujo DNS](img/flujo-de-dns.png)
-*Figura 1 — Flujo de DNS*
+---
 
-![Antes vs Después](img/antes-vs-despues-dns-y-ssl-diagrama-de-arquitectura.png)
-*Figura 2 — Antes vs Despues dns y ssl diagrama de arquitectura*
+## Final Result
 
-![Flujo problema→solución](img/diagrama-de-flujo-problema-diagnostico-solucion.png)
-*Figura 3 — Proceso de problema, diagnóstico y solución*
+The website is now fully functional across all scenarios:
 
-![Reglas 301](img/diagrama-de-reglas-de-redireccion-301.png)
-*Figura 4 — Redirecciones 301 configuradas en Cloudflare*
+- Incoming and outgoing emails working correctly
+- HTTP traffic redirected to HTTPS
+- Root domain redirected to `www`
+- Valid HTTPS certificate provided by Cloudflare
+- No browser security warnings
+- PXsol hotel management platform operating correctly behind the proxy
+
+---
+
+## Skills Applied
+
+- Ferozo configuration (SPF / DKIM / DMARC)
+- Advanced DNS administration
+- Cloudflare (SSL, Proxy, Rules, Redirects)
+- SSL troubleshooting and resolution
+- Multi-provider infrastructure analysis
+- Technical coordination with hosting support
+- Technical documentation and client communication
+
+---
+
+## Diagrams
+
+This repository includes flow and architecture diagrams illustrating the **before and after**
+states of the DNS and SSL configuration.
+
+![DNS Flow](img/flujo-de-dns.png)  
+*Figure 1 — DNS flow*
+
+![Before vs After](img/antes-vs-despues-dns-y-ssl-diagrama-de-arquitectura.png)  
+*Figure 2 — Before vs after DNS & SSL architecture*
+
+![Problem → Solution Flow](img/diagrama-de-flujo-problema-diagnostico-solucion.png)  
+*Figure 3 — Problem, diagnosis and solution process*
+
+![301 Redirect Rules](img/diagrama-de-reglas-de-redireccion-301.png)  
+*Figure 4 — 301 redirects configured in Cloudflare*
+
