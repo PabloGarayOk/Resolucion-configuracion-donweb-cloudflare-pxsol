@@ -10,6 +10,24 @@ The infrastructure involved three different services:
 
 ---
 
+## Project Overview
+
+**Role:** Infrastructure / Web Operations
+
+This repository documents a **real-world infrastructure troubleshooting case** involving DNS, SSL certificates, email delivery, and multi-provider configuration.
+
+The project focused on diagnosing and resolving complex conflicts between:
+
+- A hosting provider (DonWeb / Ferozo)
+- A CDN and SSL provider (Cloudflare)
+- An external SaaS platform (PXsol)
+
+The goal was to restore **secure access, correct redirections, and reliable email delivery**, while ensuring long-term stability and proper DNS propagation.
+
+This repository serves as a **technical case study**, demonstrating problem analysis, decision-making, and implementation across multiple systems rather than application-level development.
+
+---
+
 ## Initial Problem
 
 The domain `abedulmardelaspampas.com.ar` was experiencing the following issues:
@@ -88,6 +106,20 @@ The website is now fully functional across all scenarios:
 - Multi-provider infrastructure analysis
 - Technical coordination with hosting support
 - Technical documentation and client communication
+
+---
+
+## Lessons Learned
+
+- SSL issues often originate from **DNS and proxy misalignment**, not from the certificate itself.
+- Mixing proxied and non-proxied records can lead to inconsistent SSL behavior.
+- Root domains and 'www' subdomains may require **different handling** depending on SaaS limitations.
+- Proper 301 redirections are essential to avoid certificate mismatch errors.
+- Email delivery problems are frequently caused by missing or incorrect **SPF, DKIM, and DMARC** records.
+- Cloudflare SSL modes must match the capabilities of the origin server.
+- Documenting infrastructure changes is critical for future maintenance and support.
+- Multi-provider setups require a holistic view rather than isolated fixes.
+- Clear technical communication with hosting support accelerates resolution.
 
 ---
 
